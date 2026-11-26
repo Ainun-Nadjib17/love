@@ -36,6 +36,9 @@
     <div class="info">Press SPACE to skip | ESC to exit</div>
     <canvas id="canvas"></canvas>
 
+    <!-- Musik latar: sudah autoplay (muted) supaya posisi lagu langsung berjalan -->
+    <audio id="bgm" src="love.mpeg" type="audio/mpeg" preload="auto" loop muted playsinline autoplay></audio>
+
     <script>
         const canvas = document.getElementById('canvas');
         const ctx = canvas.getContext('2d');
@@ -238,6 +241,44 @@
 
         // Start animation
         animate();
+    </script>
+
+    <script>
+        // Musik latar: love.mpeg
+        const bgm = document.getElementById('bgm');
+        bgm.volume = 0.7;
+
+        const GESTURES = ['pointerdown', 'keydown', 'touchstart', 'click'];
+
+        function stopStartListeners() {
+            GESTURES.forEach((evt) => {
+                window.removeEventListener(evt, startMusic);
+            });
+        }
+
+        // Lagu sudah berjalan dalam mode mute, jadi cukup unmute -> suara langsung keluar
+        function startMusic() {
+            bgm.muted = false;
+            if (bgm.paused) {
+                bgm.play().then(stopStartListeners).catch(() => {});
+            } else {
+                stopStartListeners();
+            }
+        }
+
+        GESTURES.forEach((evt) => {
+            window.addEventListener(evt, startMusic);
+        });
+
+        // Coba langsung bersuara saat load; kalau diblokir, biarkan mute berjalan
+        bgm.muted = false;
+        const tryPlay = bgm.play();
+        if (tryPlay && tryPlay.then) {
+            tryPlay.then(stopStartListeners).catch(() => {
+                bgm.muted = true;
+                bgm.play().catch(() => {});
+            });
+        }
     </script>
 </body>
 </html>
